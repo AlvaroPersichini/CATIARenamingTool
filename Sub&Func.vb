@@ -1,13 +1,8 @@
-﻿
-Option Explicit On
+﻿Option Explicit On
 Option Strict On
-
 
 Module Module1
 
-    Dim objDictionary2 As Scripting.Dictionary = CType(CreateObject("Scripting.Dictionary"), Scripting.Dictionary)
-    Dim intCantidadRenombrada As Integer = 0
-    Dim intCantidadNoRenombrada As Integer = 0
 
     Function FileCount(localCurrentProduct As ProductStructureTypeLib.Product, localDictionary As Scripting.Dictionary) As Integer
         Dim i As Object
@@ -24,7 +19,6 @@ Finish:
         Next
         FileCount = localDictionary.Count
     End Function
-
 
 
 
@@ -68,6 +62,10 @@ Finish:
 
 
 
+
+    Dim intCantidadRenombrada As Integer = 0
+    Dim intCantidadNoRenombrada As Integer = 0
+
     Sub TextReplace(ByRef objCurrentProduct As ProductStructureTypeLib.Product, localDictionary As Scripting.Dictionary)
 
         Dim i As Integer
@@ -78,36 +76,106 @@ Finish:
         objCurrentProduct = objCurrentProduct.ReferenceProduct
 
         For i = 1 To objCurrentProduct.Products.Count
-            strOldPartNumber = objCurrentProduct.Products.Item(CType(i, Object)).PartNumber
-            If InStr(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, strToSearch) <> 0 Then
-                objCurrentProduct.Products.Item(CType(i, Object)).PartNumber = Replace(Expression:=objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, Find:=strToSearch, Replacement:=strReplacement, 1, Count:=1, Compare:=1)
-                If strOldPartNumber = objCurrentProduct.Products.Item(CType(i, Object)).PartNumber Then
-                    If objDictionary2.Exists(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String)) Then
-
-                        objDictionary2.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber) = CType(objDictionary2.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber), Integer) + 1
-                        GoTo Continuar
+            Dim currentItem = objCurrentProduct.Products.Item(CType(i, Object))
+            strOldPartNumber = currentItem.PartNumber
+            If InStr(strOldPartNumber, strToSearch) <> 0 Then
+                currentItem.PartNumber = Replace(strOldPartNumber, strToSearch, strReplacement, 1, 1, vbTextCompare)
+                If strOldPartNumber = currentItem.PartNumber Then
+                    If localDictionary.Exists(CType(currentItem.PartNumber, String)) Then
+                        localDictionary.Item(currentItem.PartNumber) = CType(localDictionary.Item(currentItem.PartNumber), Integer) + 1
                     Else
-                        objDictionary2.Add(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String), 1)
+                        localDictionary.Add(CType(currentItem.PartNumber, String), 1)
                         intCantidadNoRenombrada += 1
                     End If
                 Else
                     intCantidadRenombrada += 1
                 End If
-Continuar:
             End If
         Next
 
         For i = 1 To objCurrentProduct.Products.Count
-            If localDictionary.Exists(objCurrentProduct.Products.Item(i).PartNumber) Then
-                localDictionary.Item(objCurrentProduct.Products.Item(i).PartNumber) = localDictionary.Item(objCurrentProduct.Products.Item(i).PartNumber) + 1
-                GoTo Finish
+            Dim currentItem = objCurrentProduct.Products.Item(CType(i, Object))
+            If Not localDictionary.Exists(CType(currentItem.PartNumber, String)) Then
+                localDictionary.Add(CType(currentItem.PartNumber, String), 1)
+                TextReplace(currentItem, localDictionary)
             Else
-                localDictionary.Add(objCurrentProduct.Products.Item(i).PartNumber, 1)
-                TextReplace(objCurrentProduct.Products.Item(i), localDictionary)
+                localDictionary.Item(currentItem.PartNumber) = CType(localDictionary.Item(currentItem.PartNumber), Integer) + 1
             End If
-Finish:
         Next
+
+        Debug.Print("Renombrados: " & intCantidadRenombrada)
+        Debug.Print("No Renombrados: " & intCantidadNoRenombrada)
 
     End Sub
 
+
+
 End Module
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'    Dim intCantidadRenombrada As Integer = 0
+'    Dim intCantidadNoRenombrada As Integer = 0
+
+'    Sub TextReplace(ByRef objCurrentProduct As ProductStructureTypeLib.Product, localDictionary As Scripting.Dictionary)
+
+'        Dim i As Integer
+'        Dim strToSearch As String = "Texto a ser reemplazado"
+'        Dim strReplacement As String = "Texto de reemplazo"
+'        Dim strOldPartNumber As String
+
+'        objCurrentProduct = objCurrentProduct.ReferenceProduct
+
+'        For i = 1 To objCurrentProduct.Products.Count
+'            strOldPartNumber = objCurrentProduct.Products.Item(CType(i, Object)).PartNumber
+'            If InStr(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, strToSearch) <> 0 Then
+'                objCurrentProduct.Products.Item(CType(i, Object)).PartNumber = Replace(Expression:=objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, Find:=strToSearch, Replacement:=strReplacement, 1, Count:=1, Compare:=CType(1, CompareMethod))
+'                If strOldPartNumber = objCurrentProduct.Products.Item(CType(i, Object)).PartNumber Then
+'                    If objDictionary2.Exists(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String)) Then
+'                        objDictionary2.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber) = CType(objDictionary2.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber), Integer) + 1
+'                        GoTo Continuar
+'                    Else
+'                        objDictionary2.Add(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String), 1)
+'                        intCantidadNoRenombrada += 1
+'                    End If
+'                Else
+'                    intCantidadRenombrada += 1
+'                End If
+'Continuar:
+'            End If
+'        Next
+
+'        For i = 1 To objCurrentProduct.Products.Count
+'            If localDictionary.Exists(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String)) Then
+'                localDictionary.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber) = CType(localDictionary.Item(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber), Integer) + 1
+'                GoTo Finish
+'            Else
+'                localDictionary.Add(CType(objCurrentProduct.Products.Item(CType(i, Object)).PartNumber, String), 1)
+'                TextReplace(objCurrentProduct.Products.Item(CType(i, Object)), localDictionary)
+'            End If
+'Finish:
+'        Next
+
+'    End Sub
