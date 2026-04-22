@@ -1,5 +1,6 @@
 ﻿Option Explicit On
 Option Strict On
+
 Imports CATIAClassLibrary
 
 
@@ -11,8 +12,6 @@ Module Program
         ' Inicio
         Console.WriteLine(">>> Starting Process...")
 
-
-
         ' Catia
         Dim CATIAsession As New CatiaSession
         If Not CATIAsession.IsReady Then
@@ -21,7 +20,6 @@ Module Program
         End If
         Dim oProduct As ProductStructureTypeLib.Product = CATIAsession.RootProduct
         CATIAsession.Application.DisplayFileAlerts = False
-
 
 
         RenameInstances(oProduct)
